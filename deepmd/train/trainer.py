@@ -63,6 +63,7 @@ class DPTrainer (object):
         descrpt_param = j_must_have(model_param, 'descriptor')
         fitting_param = j_must_have(model_param, 'fitting_net')
         typeebd_param = model_param.get('type_embedding', None)
+        spin_param = model_param.get('spin', None)
         self.model_param    = model_param
         self.descrpt_param  = descrpt_param
         
@@ -124,6 +125,12 @@ class DPTrainer (object):
         else:
             self.typeebd = None
 
+        # spin
+        if spin_param is not None:
+            self.spin = spin_param
+        else:
+            self.spin = None
+
         # init model
         # infer model type by fitting_type
         if fitting_type == 'ener':
@@ -131,6 +138,7 @@ class DPTrainer (object):
                 self.descrpt, 
                 self.fitting, 
                 self.typeebd,
+                self.spin,
                 model_param.get('type_map'),
                 model_param.get('data_stat_nbatch', 10),
                 model_param.get('data_stat_protect', 1e-2),
@@ -197,6 +205,8 @@ class DPTrainer (object):
                 self.loss = EnerStdLoss(**loss_param)
             elif loss_type == 'ener_dipole':
                 self.loss = EnerDipoleLoss(**loss_param)
+            elif loss_type == 'ener_spin':
+                self.loss = EnerSpinLoss(**loss_param)
             else:
                 raise RuntimeError('unknow loss type')
         elif fitting_type == 'wfc':

@@ -43,6 +43,7 @@ class EnerModel(Model) :
             descrpt, 
             fitting, 
             typeebd = None,
+            spin = None,
             type_map : List[str] = None,
             data_stat_nbatch : int = 10,
             data_stat_protect : float = 1e-2,
@@ -63,6 +64,8 @@ class EnerModel(Model) :
         self.numb_fparam = self.fitting.get_numb_fparam()
         # type embedding
         self.typeebd = typeebd
+        # spin
+        self.spin = spin
         # other inputs
         if type_map is None:
             self.type_map = []
@@ -158,6 +161,10 @@ class EnerModel(Model) :
                 suffix = suffix,
             )
             input_dict['type_embedding'] = type_embedding
+        
+        # spin if any
+        if self.spin is not None:
+            input_dict['spin'] = self.spin
 
         if frz_model == None:
             dout \

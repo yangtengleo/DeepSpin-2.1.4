@@ -244,6 +244,55 @@ class EnerStdLoss (Loss) :
         return print_str      
 
 
+class EnerSpinLoss (Loss) :
+    def __init__ (self, 
+                  starter_learning_rate : float, 
+                  start_pref_e : float = 0.02,
+                  limit_pref_e : float = 1.00,
+                  start_pref_fr : float = 1000,
+                  limit_pref_fr : float = 1.00,
+                  start_pref_fm : float = 10000,
+                  limit_pref_fm : float = 10.0,
+                  start_pref_v : float = 0.0,
+                  limit_pref_v : float = 0.0,
+                  start_pref_ae : float = 0.0,
+                  limit_pref_ae : float = 0.0,
+                  start_pref_pf : float = 0.0,
+                  limit_pref_pf : float = 0.0,
+                  relative_f : float = None,
+                  enable_atom_ener_coeff: bool=False,
+    ) -> None:
+        self.starter_learning_rate = starter_learning_rate
+        self.start_pref_e = start_pref_e
+        self.limit_pref_e = limit_pref_e
+        self.start_pref_fr = start_pref_fr
+        self.limit_pref_fr = limit_pref_fr
+        self.start_pref_fm = start_pref_fm
+        self.limit_pref_fm = limit_pref_fm
+        self.start_pref_v = start_pref_v
+        self.limit_pref_v = limit_pref_v
+        self.start_pref_ae = start_pref_ae
+        self.limit_pref_ae = limit_pref_ae
+        self.start_pref_pf = start_pref_pf
+        self.limit_pref_pf = limit_pref_pf
+        self.relative_f = relative_f
+        self.enable_atom_ener_coeff = enable_atom_ener_coeff
+        self.has_e = (self.start_pref_e != 0.0 or self.limit_pref_e != 0.0)
+        self.has_fr = (self.start_pref_fr != 0.0 or self.limit_pref_fr != 0.0)
+        self.has_fm = (self.start_pref_fm != 0.0 or self.limit_pref_fm != 0.0)
+        self.has_v = (self.start_pref_v != 0.0 or self.limit_pref_v != 0.0)
+        self.has_ae = (self.start_pref_ae != 0.0 or self.limit_pref_ae != 0.0)
+        self.has_pf = (self.start_pref_pf != 0.0 or self.limit_pref_pf != 0.0)
+        # data required
+        add_data_requirement('energy', 1, atomic=False, must=False, high_prec=True)
+        add_data_requirement('force',  3, atomic=True,  must=False, high_prec=False)
+        add_data_requirement('virial', 9, atomic=False, must=False, high_prec=False)
+        add_data_requirement('atom_ener', 1, atomic=True, must=False, high_prec=False)
+        add_data_requirement('atom_pref', 1, atomic=True, must=False, high_prec=False, repeat=3)
+        if self.enable_atom_ener_coeff:
+            add_data_requirement('atom_ener_coeff', 1, atomic=True, must=False, high_prec=False, default=1.)
+
+
 class EnerDipoleLoss (Loss) :
     def __init__ (self, 
                   starter_learning_rate : float,
