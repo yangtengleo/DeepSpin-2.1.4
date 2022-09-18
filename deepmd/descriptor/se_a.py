@@ -518,6 +518,7 @@ class DescrptSeA (DescrptSe):
         atom_virial
                 The atomic virial
         """
+        # partial E / partial D
         [net_deriv] = tf.gradients (atom_ener, self.descrpt_reshape)
         tf.summary.histogram('net_derivative', net_deriv)
         net_deriv_reshape = tf.reshape (net_deriv, [np.cast['int64'](-1), natoms[0] * np.cast['int64'](self.ndescrpt)])        
