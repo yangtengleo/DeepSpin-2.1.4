@@ -251,68 +251,59 @@ class EnerModel(Model) :
                                            n_r_sel = nnei_r)
             force = force + sw_force + tab_force
 
-        # force = tf.reshape (force, [-1, 3 * natoms[1]], name = "o_force"+suffix)
         force = tf.reshape (force, [-1, 3 * natoms[1]])
-
         if self.spin is not None :
             # split and concatenate force to compute local atom force and magnetic force
-            use_spin = self.spin['use_spin'] # ['true', 'true', false']
-            use_spin_all = use_spin.append(i) for i in use_spin if i == True
-            virtual_len = self.spin['virtual_len'] # [1.1, 1.2]
-            spin_norm = self.spin['spin_norm'] # [1.3, 1.4]
-            # natoms_vec = input_dict['natoms_vec'] # [200, 200, 30, 50, 40, 30, 50]
-            # change definition of natoms_vec to natoms
-            natoms_vec = natoms
-            natoms_index = np.insert(np.cumsum(natoms_vec[2:]) * 3, 0, 0)
-            # forces_real = tf.slice(force, [])
+            use_spin = self.spin['use_spin']
+            virtual_len = self.spin['virtual_len']
+            spin_norm = self.spin['spin_norm']
+            natoms_index = np.insert(np.cumsum(natoms[2:]) * 3, 0, 0)
             force_real_list = []
             for idx, use in enumerate(use_spin):
                 if use == True:
                     force_real_list.append(tf.slice(force, [0, natoms_index[idx] ], 
-                                                           [-1, natoms_vec[idx + 2] ]) \
-                                         + tf.slice(force, [0, natoms_index[idx + len(use_spin)] ],
-                                                           [-1, natoms_vec[idx + 2 + len(use_spin)] ]))
+                                                           [-1, natoms[idx + 2] ]) + \
+                                           tf.slice(force, [0, natoms_index[idx + len(use_spin)] ],
+                                                           [-1, natoms[idx + 2 + len(use_spin)] ]))
                 else:
                     force_real_list.append(tf.slice(force, [0, natoms_index[idx] ], 
-                                                           [-1, natoms_vec[idx + 2] ]))
+                                                           [-1, natoms[idx + 2] ]))
             force_mag_list = []
             for idx, use in enumerate(use_spin):
                 if use == True:
                     force_mag_list.append(tf.slice(force, [0, natoms_index[idx + len(use_spin)] ],
-                                                          [-1, natoms_vec[idx + 2 + len(use_spin)] ]))
-                    force_mag_list[idx] *= virial_len[idx] / spin_norm[idx]
+                                                          [-1, natoms[idx + 2 + len(use_spin)] ]))
+                    force_mag_list[idx] *= virtual_len[idx] / spin_norm[idx]
 
             force_real = tf.concat(force_real_list, axis = 1)
             force_mag = tf.concat(force_mag_list, axis = 1)
             loc_force = tf.concat([force_real, force_mag], axis = 1)
             force = loc_force
             # if ghost atoms exist, compute ghost atom force and magnetic force
-            if natoms_vec[0] != natoms_vec[1]:
-                ghsot_atype = atype[natoms_vec[0]: ]
-                ghost_natoms_vec = []
-                # natoms_ghost_index = []
+            if natoms[0] != natoms[1]:
+                ghsot_atype = atype[natoms[0]: ]
+                ghost_natoms = []
                 for num in natoms_index[:-1]:
-                    ghost_natoms_vec.append(len(np.array(ghsot_atype) == atype[num]))
-                    # natoms_ghost_index.append((np.argwhere(np.array(ghsot_atom_list) == atype[num])[-1][0] + 1) * 3)
-                ghost_natoms_index = np.insert(np.cumsum(ghost_natoms_vec) * 3, 0, 0)
-                ghost_natoms_index += natoms_vec[0] * 3
+                    ghost_natoms.append(len(np.array(ghsot_atype) == atype[num]))
+                ghost_natoms_index = np.insert(np.cumsum(ghost_natoms) * 3, 0, 0)
+                ghost_natoms_index += natoms[0] * 3
 
                 ghost_force_real_list = []
                 for idx, use in enumerate(use_spin):
                     if use == True:
                         ghost_force_real_list.append(tf.slice(force, [0, ghost_natoms_index[idx] ], 
-                                                                     [-1, ghost_natoms_vec[idx + 2] ]) \
-                                                   + tf.slice(force, [-1, ghost_natoms_index[idx + len(use_spin)] ],
-                                                                     [-1, ghost_natoms_vec[idx + 2 + len(use_spin)] ]))
+                                                                     [-1, ghost_natoms[idx + 2] ]) + \
+                                                     tf.slice(force, [0, ghost_natoms_index[idx + len(use_spin)] ],
+                                                                     [-1, ghost_natoms[idx + 2 + len(use_spin)] ]))
                     else:
                         ghost_force_real_list.append(tf.slice(force, [0, ghost_natoms_index[idx] ], 
-                                                                     [-1, ghost_natoms_vec[idx + 2] ]))
+                                                                     [-1, ghost_natoms[idx + 2] ]))
                 ghost_force_mag_list = []
                 for idx, use in enumerate(use_spin):
                     if use == True:
                         ghost_force_mag_list.append(tf.slice(force, [0, ghost_natoms_index[idx + len(use_spin)] ],
-                                                                    [-1, ghost_natoms_vec[idx + 2 + len(use_spin)] ]))
-                        ghost_force_mag_list[idx] *= virial_len[idx] / spin_norm[idx]
+                                                                    [-1, ghost_natoms[idx + 2 + len(use_spin)] ]))
+                        ghost_force_mag_list[idx] *= virtual_len[idx] / spin_norm[idx]
 
                 ghost_force_real = tf.concat(ghost_force_real_list, axis = 1)
                 ghost_force_mag = tf.concat(ghost_force_mag_list, axis = 1)
@@ -321,8 +312,6 @@ class EnerModel(Model) :
                 force = tf.concat([loc_force, ghost_force], axis = 1)
                 
         force = tf.reshape (force, [-1, 3 * natoms[1]], name = "o_force"+suffix)
-
-
 
 
         if self.srtab is not None :
