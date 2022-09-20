@@ -67,6 +67,12 @@ class DPTrainer (object):
         self.model_param    = model_param
         self.descrpt_param  = descrpt_param
         
+        # spin
+        if spin_param is not None:
+            self.spin = spin_param
+        else:
+            self.spin = None
+        
         # nvnmd
         self.nvnmd_param = jdata.get('nvnmd', {})
         nvnmd_cfg.init_from_jdata(self.nvnmd_param)
@@ -81,7 +87,10 @@ class DPTrainer (object):
         except KeyError:
             raise KeyError('the type of descriptor should be set by `type`')
 
-        self.descrpt = Descriptor(**descrpt_param)
+        if self.spin is not None:
+            self.descrpt = Descriptor(**descrpt_param, **self.spin)
+        else :
+            self.descrpt = Descriptor(**descrpt_param)
 
         # fitting net
         fitting_type = fitting_param.get('type', 'ener')
@@ -124,12 +133,6 @@ class DPTrainer (object):
             )
         else:
             self.typeebd = None
-
-        # spin
-        if spin_param is not None:
-            self.spin = spin_param
-        else:
-            self.spin = None
 
         # init model
         # infer model type by fitting_type
