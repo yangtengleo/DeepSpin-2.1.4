@@ -22,27 +22,29 @@ class TestModelSpin(tf.test.TestCase):
         del_data()
 
     def test_model_spin(self):        
-        jfile = 'NiO_spin.json'
+        jfile = 'model_spin/test_model_spin.json'
         jdata = j_loader(jfile)
 
         # set system information
-        systems = j_must_have(jdata, 'systems')
-        set_pfx = j_must_have(jdata, 'set_prefix')
-        batch_size = j_must_have(jdata, 'batch_size')
-        test_size = j_must_have(jdata, 'numb_test')
-        stop_batch = j_must_have(jdata, 'stop_batch')
+        systems = j_must_have(jdata['training']['training_data'], 'systems')
+        set_pfx = j_must_have(jdata['training'], 'set_prefix')
+        batch_size = j_must_have(jdata['training']['training_data'], 'batch_size')
+        test_size = j_must_have(jdata['training']['validation_data'], 'numb_btch')
+        stop_batch = j_must_have(jdata['training'], 'numb_steps')
         rcut = j_must_have(jdata['model']['descriptor'], 'rcut')
         data = DataSystem(systems, set_pfx, batch_size, test_size, rcut, run_opt = None)        
         test_data = data.get_test()
 
         # initialize model
-        jdata['model']['descriptor'].pop('type', None)        
-        descrpt = DescrptSeA(**jdata['model']['descriptor'], **jdata['model']['spin'], uniform_seed=True)
-        jdata['model']['fitting_net']['descrpt'] = descrpt
-        fitting = EnerFitting(**jdata['model']['fitting_net'], uniform_seed=True)
-        spin = jdata['model']['spin']
-        model = EnerModel(descrpt, fitting, spin=spin)
-
+        descrpt_param = jdata['model']['descriptor']
+        spin_param = jdata['model']['spin']
+        fitting_param = jdata['model']['fitting_net']
+        descrpt = DescrptSeA(**descrpt_param, **spin_param, uniform_seed=True)
+        fitting_param.pop('type', None)
+        fitting_param['descrpt'] = descrpt
+        fitting = EnerFitting(**fitting_param, uniform_seed=True)
+        model = EnerModel(descrpt, fitting, spin=spin_param)
+        
         input_data = {'coord' : [test_data['coord']], 
                       'box': [test_data['box']], 
                       'type': [test_data['type']],
@@ -77,24 +79,40 @@ class TestModelSpin(tf.test.TestCase):
 
         # feed data and get results
         feed_dict_test = {t_prop_c:        test_data['prop_c'],
-                          t_energy:        test_data['energy'] [:test_size],
-                          t_coord:         test_data['coord']  [:test_size, :],
-                          t_box:           test_data['box']    [:test_size, :],
-                          t_type:          test_data['type'],
+                          t_energy:        test_data['energy'],
+                          t_coord:         np.reshape(test_data['coord']  ,  [-1]),
+                          t_box:           np.reshape(test_data['box']    ,  [-1, 9]),
+                          t_type:          np.reshape(test_data['type'],     [-1]),
                           t_natoms:        test_data['natoms_vec'],
                           t_mesh:          test_data['default_mesh'],
                           is_training:     False
         }
+
+        print("t_natoms")
+        print(feed_dict_test[t_natoms])
+        print("t_type")
+        print(feed_dict_test[t_type])
+
         sess = self.test_session().__enter__()
         sess.run(tf.global_variables_initializer())
         [out_ener, out_force, out_virial] = sess.run([energy, force, virial], 
                                                       feed_dict = feed_dict_test)
 
-        natoms_real = np.sum(test_data['natoms_vec'][2 : 2 + len(spin['use_spin'])])
+        natoms_real = np.sum(test_data['natoms_vec'][2 : 2 + len(spin_param['use_spin'])])
         force_real = np.reshape(out_force[:, :natoms_real * 3], [-1, 3])
         force_mag = np.reshape(out_force[:, natoms_real * 3:], [-1, 3])
         print(force_real[:5, :])
         print(force_mag[:5, :])
+        # print(out_ener[:5, :])
+        # 原子力 对比.
+        for idx in range(6):
+            print(f'解析力F_{idx//3}_{idx%3}: ', force_real[idx//3, idx%3])
+            print(f'数值力F_{idx//3}_{idx%3}: ', -(out_ener[2*idx + 1] - out_ener[2*idx + 2]) / 0.02)
+        # 磁性力 对比.
+        for idx in range(6):
+            print(f'解析磁性力F_{idx//3}_{idx%3}: ', force_mag[idx//3, idx%3])
+            print(f'数值磁性力F_{idx//3}_{idx%3}: ', -(out_ener[2*idx + 13] - out_ener[2*idx + 14]) / 0.02)
+
 
 
 if __name__ == '__main__':

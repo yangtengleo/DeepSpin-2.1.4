@@ -2,7 +2,9 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Tuple
 
 import numpy as np
-from deepmd.env import tf
+# from deepmd.env import tf
+
+import tensorflow as tf
 from deepmd.utils import Plugin, PluginVariant
 
 
