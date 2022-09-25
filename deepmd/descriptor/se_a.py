@@ -464,10 +464,10 @@ class DescrptSeA (DescrptSe):
             t_ntypes = tf.constant(self.ntypes, 
                                    name = 'ntypes', 
                                    dtype = tf.int32)
+            t_ntypes_spin = tf.constant(self.ntypes_spin, 
+                                        name = 'ntypes_spin', 
+                                        dtype = tf.int32)
             if self.use_spin is not None:
-                t_ntypes_spin = tf.constant(self.ntypes_spin, 
-                                            name = 'ntypes_spin', 
-                                            dtype = tf.int32)
                 t_virtual_len = tf.constant(self.virtual_len, 
                                             name = 'virtual_len', 
                                             dtype = GLOBAL_TF_FLOAT_PRECISION)

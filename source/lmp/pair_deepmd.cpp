@@ -465,6 +465,7 @@ void PairDeepMD::compute(int eflag, int vflag)
 	}
       }
     }
+    // 多个模型. .pb .pb .pb .pb
     else if (multi_models_mod_devi) {
       vector<double > deatom (nall * 1, 0);
       vector<double > dvatom (nall * 9, 0);
@@ -523,12 +524,13 @@ void PairDeepMD::compute(int eflag, int vflag)
       for (unsigned dd = 0; dd < dvirial.size(); ++dd) dvirial[dd] = dvirial_[dd];	
       for (unsigned dd = 0; dd < deatom.size(); ++dd) deatom[dd] = deatom_[dd];	
       for (unsigned dd = 0; dd < dvatom.size(); ++dd) dvatom[dd] = dvatom_[dd];	
+      // resize all force and all virial
       all_force.resize(all_force_.size());
       for (unsigned ii = 0; ii < all_force_.size(); ++ii){
-	all_force[ii].resize(all_force_[ii].size());
-	for (unsigned jj = 0; jj < all_force_[ii].size(); ++jj){
-	  all_force[ii][jj] = all_force_[ii][jj];
-	}
+	      all_force[ii].resize(all_force_[ii].size());
+	      for (unsigned jj = 0; jj < all_force_[ii].size(); ++jj){
+	        all_force[ii][jj] = all_force_[ii][jj];
+	      }
       }
       all_virial.resize(all_virial_.size());
       for (unsigned ii = 0; ii < all_virial_.size(); ++ii){
@@ -539,13 +541,13 @@ void PairDeepMD::compute(int eflag, int vflag)
       }
 #endif
       if (eflag_atom) {
-	for (int ii = 0; ii < nlocal; ++ii) eatom[ii] += deatom[ii];
+	      for (int ii = 0; ii < nlocal; ++ii) eatom[ii] += deatom[ii];
       }
 	// Added by Davide Tisi 2020
 	// interface the atomic virial computed by DeepMD 
 	// with the one used in centroid atoms
       if (cvflag_atom) {
-	for (int ii = 0; ii < nall; ++ii){
+	      for (int ii = 0; ii < nall; ++ii){
 	  //vatom[ii][0] += 1.0 * dvatom[9*ii+0];
 	  //vatom[ii][1] += 1.0 * dvatom[9*ii+4];
 	  //vatom[ii][2] += 1.0 * dvatom[9*ii+8];
@@ -564,30 +566,30 @@ void PairDeepMD::compute(int eflag, int vflag)
 	}
       }      
       if (out_freq > 0 && update->ntimestep % out_freq == 0) {
-	int rank = comm->me;
-	// std force 
-	if (newton_pair) {
-#if LAMMPS_VERSION_NUMBER>=20220324
-	  comm->reverse_comm(this);
-#else
-    comm->reverse_comm_pair(this);
-#endif
-	}
-	vector<double> std_f;
-#ifdef HIGH_PREC
-	vector<double> tmp_avg_f;
-	deep_pot_model_devi.compute_avg (tmp_avg_f, all_force);  
-	deep_pot_model_devi.compute_std_f (std_f, tmp_avg_f, all_force);
-	if (out_rel == 1){
-	    deep_pot_model_devi.compute_relative_std_f (std_f, tmp_avg_f, eps);
-	}
-#else 
-	vector<float> tmp_avg_f_, std_f_;
-	for (unsigned ii = 0; ii < all_force_.size(); ++ii){
-	  for (unsigned jj = 0; jj < all_force_[ii].size(); ++jj){
-	    all_force_[ii][jj] = all_force[ii][jj];
-	  }
-	}
+	      int rank = comm->me; // 核的编号.
+	      // std force 
+	      if (newton_pair) {
+          #if LAMMPS_VERSION_NUMBER>=20220324
+      	  comm->reverse_comm(this);
+          #else
+          comm->reverse_comm_pair(this);
+          #endif
+	      }
+	    vector<double> std_f;
+      #ifdef HIGH_PREC
+        vector<double> tmp_avg_f;
+        deep_pot_model_devi.compute_avg (tmp_avg_f, all_force);  
+        deep_pot_model_devi.compute_std_f (std_f, tmp_avg_f, all_force);
+        if (out_rel == 1){
+            deep_pot_model_devi.compute_relative_std_f (std_f, tmp_avg_f, eps);
+        }
+      #else 
+        vector<float> tmp_avg_f_, std_f_;
+        for (unsigned ii = 0; ii < all_force_.size(); ++ii){
+          for (unsigned jj = 0; jj < all_force_[ii].size(); ++jj){
+            all_force_[ii][jj] = all_force[ii][jj];
+          }
+        }
 	deep_pot_model_devi.compute_avg (tmp_avg_f_, all_force_);  
 	deep_pot_model_devi.compute_std_f (std_f_, tmp_avg_f_, all_force_);
 	std_f.resize(std_f_.size());
@@ -717,7 +719,7 @@ void PairDeepMD::compute(int eflag, int vflag)
     else {
       error->all(FLERR,"unknown computational branch");
     }
-  }
+  } // end of do ghost
   else {
     if (numb_models == 1) {
 #ifdef HIGH_PREC

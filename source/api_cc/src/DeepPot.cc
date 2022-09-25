@@ -411,7 +411,7 @@ compute_inner (ENERGYTYPE &			dener,
     validate_fparam_aparam(nloc, fparam, aparam);
     std::vector<std::pair<std::string, Tensor>> input_tensors;
 
-    // agp == 0 means that the LAMMPS nbor list has been updated
+    // ago == 0 means that the LAMMPS nbor list has been updated
     if (ago == 0) {
       atommap = deepmd::AtomMap<VALUETYPE> (datype_.begin(), datype_.begin() + nloc);
       assert (nloc == atommap.get_type().size());

@@ -246,6 +246,15 @@ def test_ener(
         av = ret[4]
         ae = ae.reshape([numb_test, -1])
         av = av.reshape([numb_test, -1])
+    if dp.get_ntypes_spin() != 0:
+        natoms_vec = ret[3]
+        ntypes_real = dp.get_ntypes() - dp.get_ntypes_spin()
+        nloc = natoms_vec[0]
+        nloc_real = sum(natoms_vec[2 : 2 + ntypes_real])
+        force_r = np.split(force, indices_or_sections=[nloc_real*3, nloc*3], axis=1)[0]
+        force_m = np.split(force, indices_or_sections=[nloc_real*3, nloc*3], axis=1)[1]
+        test_force_r = np.split(test_data["force"][:numb_test], indices_or_sections=[nloc_real*3, nloc*3], axis=1)[0]
+        test_force_m = np.split(test_data["force"][:numb_test], indices_or_sections=[nloc_real*3, nloc*3], axis=1)[1]
 
     rmse_e = rmse(energy - test_data["energy"][:numb_test].reshape([-1, 1]))
     rmse_f = rmse(force - test_data["force"][:numb_test])
@@ -256,6 +265,9 @@ def test_ener(
         rmse_ae = rmse(
             test_data["atom_ener"][:numb_test].reshape([-1]) - ae.reshape([-1])
         )
+    if dp.get_ntypes_spin() != 0:
+        rmse_fr = (rmse(force_r  - test_force_r))
+        rmse_fm = (rmse(force_m  - test_force_m))
 
     # print ("# energies: %s" % energy)
     log.info(f"# number of test data : {numb_test:d} ")
@@ -267,6 +279,9 @@ def test_ener(
         log.info(f"Virial RMSE/Natoms : {rmse_va:e} eV")
     if has_atom_ener:
         log.info(f"Atomic ener RMSE   : {rmse_ae:e} eV")
+    if dp.get_ntypes_spin() != 0:
+        log.info(f"Force_real RMSE     : {rmse_fr:e} eV/A")
+        log.info(f"Force_mag  RMSE     : {rmse_fm:e} eV/A")
 
     if detail_file is not None:
         detail_path = Path(detail_file)
