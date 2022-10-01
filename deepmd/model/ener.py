@@ -235,7 +235,11 @@ class EnerModel(Model) :
         else :
             energy_raw = atom_ener
 
-        energy_raw = tf.reshape(energy_raw, [-1, natoms[0]], name = 'o_atom_energy'+suffix)
+        if self.spin is None :
+            energy_raw = tf.reshape(energy_raw, [-1, natoms[0]], name = 'o_atom_energy'+suffix)
+        else :
+            nloc_atom = tf.reduce_sum(natoms[2 : 2 + len(self.spin['use_spin'])])
+            energy_raw = tf.reshape(energy_raw, [-1, nloc_atom], name = 'o_atom_energy'+suffix)
         energy = tf.reduce_sum(global_cvt_2_ener_float(energy_raw), axis=1, name='o_energy'+suffix)
 
         force, virial, atom_virial \
@@ -261,17 +265,17 @@ class EnerModel(Model) :
             force_real_list = []
             for idx, use in enumerate(use_spin):
                 if use == True:
-                    force_real_list.append(tf.slice(force, [0, natoms_index[idx] ], 
+                    force_real_list.append(tf.slice(force, [0, natoms_index[idx] * 3 ], 
                                                            [-1, natoms[idx + 2] * 3 ]) + \
-                                           tf.slice(force, [0, natoms_index[idx + len(use_spin)] ],
+                                           tf.slice(force, [0, natoms_index[idx + len(use_spin)] * 3 ],
                                                            [-1, natoms[idx + 2 + len(use_spin)] * 3 ]))
                 else:
-                    force_real_list.append(tf.slice(force, [0, natoms_index[idx] ], 
+                    force_real_list.append(tf.slice(force, [0, natoms_index[idx] * 3], 
                                                            [-1, natoms[idx + 2] * 3 ]))
             force_mag_list = []
             for idx, use in enumerate(use_spin):
                 if use == True:
-                    force_mag_list.append(tf.slice(force, [0, natoms_index[idx + len(use_spin)] ],
+                    force_mag_list.append(tf.slice(force, [0, natoms_index[idx + len(use_spin)] * 3 ],
                                                           [-1, natoms[idx + 2 + len(use_spin)] * 3 ]))
                     force_mag_list[idx] *= virtual_len[idx] / spin_norm[idx]
 

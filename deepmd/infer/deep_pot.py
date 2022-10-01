@@ -54,7 +54,7 @@ class DeepPot(DeepEval):
         model_file: "Path",
         load_prefix: str = "load",
         default_tf_graph: bool = False,
-        auto_batch_size: Union[bool, int, AutoBatchSize] = True,
+        auto_batch_size: Union[bool, int, AutoBatchSize] = False,
     ) -> None:
 
         # add these tensors on top of what is defined by DeepTensor Class

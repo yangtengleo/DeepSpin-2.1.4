@@ -98,7 +98,10 @@ class DPTrainer (object):
         fitting_param.pop('type', None)
         fitting_param['descrpt'] = self.descrpt
         if fitting_type == 'ener':
-            self.fitting = EnerFitting(**fitting_param)
+            if self.spin is not None:
+                self.fitting = EnerFitting(**fitting_param, **self.spin)
+            else :
+                self.fitting = EnerFitting(**fitting_param)
         # elif fitting_type == 'wfc':            
         #     self.fitting = WFCFitting(fitting_param, self.descrpt)
         elif fitting_type == 'dipole':
