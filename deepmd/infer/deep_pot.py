@@ -149,12 +149,8 @@ class DeepPot(DeepEval):
             self.dm = DipoleChargeModifier(mdl_name, mdl_charge_map, sys_charge_map, ewald_h = ewald_h, ewald_beta = ewald_beta)
 
     def _run_default_sess(self):
-        # [self.ntypes, self.rcut, self.dfparam, self.daparam, self.tmap] = run_sess(self.sess, 
-        #     [self.t_ntypes, self.t_rcut, self.t_dfparam, self.t_daparam, self.t_tmap]
-        # )
         [self.ntypes, self.ntypes_spin, self.rcut, self.dfparam, self.daparam, self.tmap] = run_sess(self.sess, 
-            [self.t_ntypes, self.t_ntypes_spin, self.t_rcut, self.t_dfparam, self.t_daparam, self.t_tmap]
-        )
+        [self.t_ntypes, self.t_ntypes_spin, self.t_rcut, self.t_dfparam, self.t_daparam, self.t_tmap])
 
     def get_ntypes(self) -> int:
         """Get the number of atom types of this model."""
@@ -269,7 +265,9 @@ class DeepPot(DeepEval):
         """
         # reshape coords before getting shape
         natoms, numb_test = self._get_natoms_and_nframes(coords, atom_types)
-        output = self._eval_func(self._eval_inner, numb_test, natoms)(coords, cells, atom_types, fparam = fparam, aparam = aparam, atomic = atomic, efield = efield)
+        output = self._eval_func(self._eval_inner, numb_test, natoms)(coords, cells, atom_types, 
+                                                                      fparam = fparam, aparam = aparam, 
+                                                                      atomic = atomic, efield = efield)
         if self.ntypes_spin == 0:
             if self.modifier_type is not None:
                 if atomic:
