@@ -107,6 +107,7 @@ private:
   bool multi_models_mod_devi;
   bool multi_models_no_mod_devi;
   bool is_restart;
+<<<<<<< HEAD
   std::vector<double> virtual_len;
   std::vector<double> spin_norm;
   int extend_inum; 
@@ -120,6 +121,21 @@ private:
   // for spin systems, search new index of atoms by their old index
   std::map<int, int> new_idx_map;
   std::map<int, int> old_idx_map;
+=======
+  vector<double> virtual_len;
+  vector<double> spin_norm;
+  int extend_inum; 
+  vector<int> extend_ilist;
+  vector<int> extend_numneigh;
+  vector<vector<int> > extend_neigh;
+  vector<int *> extend_firstneigh;
+  vector<double> extend_dcoord;
+  vector<int> extend_dtype;
+  int extend_nghost;
+  // for spin systems, search new index of atoms by their old index
+  map<int, int> new_idx_map;
+  map<int, int> old_idx_map;
+>>>>>>> 7acfbecdc0b545ac0426d41c0235c4131d97187b
 #ifdef HIGH_PREC
   std::vector<double > fparam;
   std::vector<double > aparam;

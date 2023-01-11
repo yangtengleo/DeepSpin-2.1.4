@@ -412,6 +412,7 @@ compute_inner (ENERGYTYPE &			dener,
   validate_fparam_aparam(nloc, fparam, aparam);
   std::vector<std::pair<std::string, Tensor>> input_tensors;
 
+<<<<<<< HEAD
   // ago == 0 means that the LAMMPS nbor list has been updated
   if (ago == 0) {
     atommap = deepmd::AtomMap<VALUETYPE> (datype_.begin(), datype_.begin() + nloc);
@@ -422,6 +423,18 @@ compute_inner (ENERGYTYPE &			dener,
   int ret = session_input_tensors (input_tensors, dcoord_, ntypes, datype_, dbox, nlist, fparam, aparam, atommap, nghost, ago);
   assert (nloc == ret);
   run_model (dener, dforce_, dvirial, session, input_tensors, atommap, nghost);
+=======
+    // ago == 0 means that the LAMMPS nbor list has been updated
+    if (ago == 0) {
+      atommap = deepmd::AtomMap<VALUETYPE> (datype_.begin(), datype_.begin() + nloc);
+      assert (nloc == atommap.get_type().size());
+      nlist_data.shuffle(atommap);
+      nlist_data.make_inlist(nlist);
+    }
+    int ret = session_input_tensors (input_tensors, dcoord_, ntypes, datype_, dbox, nlist, fparam, aparam, atommap, nghost, ago);
+    assert (nloc == ret);
+    run_model (dener, dforce_, dvirial, session, input_tensors, atommap, nghost);
+>>>>>>> 7acfbecdc0b545ac0426d41c0235c4131d97187b
 }
 
 

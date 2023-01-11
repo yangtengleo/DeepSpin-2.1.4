@@ -104,6 +104,7 @@ class TestModelSpin(tf.test.TestCase):
         print(force_real[:5, :])
         print(force_mag[:5, :])
         # print(out_ener[:5, :])
+<<<<<<< HEAD
         direc = ['x', 'y', 'z']
         # 原子力 对比.
         for idx in range(6):
@@ -113,6 +114,16 @@ class TestModelSpin(tf.test.TestCase):
         for idx in range(6):
             print(f'解析磁性力F_{idx//3}{direc[idx%3]}: ', force_mag[idx//3, idx%3])
             print(f'数值磁性力F_{idx//3}{direc[idx%3]}: ', -(out_ener[2*idx + 13] - out_ener[2*idx + 14]) / 0.02)
+=======
+        # 原子力 对比.
+        for idx in range(6):
+            print(f'解析力F_{idx//3}_{idx%3}: ', force_real[idx//3, idx%3])
+            print(f'数值力F_{idx//3}_{idx%3}: ', -(out_ener[2*idx + 1] - out_ener[2*idx + 2]) / 0.02)
+        # 磁性力 对比.
+        for idx in range(6):
+            print(f'解析磁性力F_{idx//3}_{idx%3}: ', force_mag[idx//3, idx%3])
+            print(f'数值磁性力F_{idx//3}_{idx%3}: ', -(out_ener[2*idx + 13] - out_ener[2*idx + 14]) / 0.02)
+>>>>>>> 7acfbecdc0b545ac0426d41c0235c4131d97187b
 
 
 
