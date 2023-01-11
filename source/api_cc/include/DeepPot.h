@@ -162,6 +162,11 @@ public:
   **/
   int numb_types () const {assert(inited); return ntypes;};
   /**
+  * @brief Get the number of types with spin.
+  * @return The number of types with spin.
+  **/
+  int numb_types_spin () const {assert(inited); return ntypes_spin;};
+  /**
   * @brief Get the dimension of the frame parameter.
   * @return The dimension of the frame parameter.
   **/
@@ -189,6 +194,7 @@ private:
   std::string model_type;
   std::string model_version;
   int ntypes;
+  int ntypes_spin;
   int dfparam;
   int daparam;
   void validate_fparam_aparam(const int & nloc,
@@ -314,6 +320,11 @@ public:
   **/
   int numb_types () const {assert(inited); return ntypes;};
   /**
+  * @brief Get the number of types with spin.
+  * @return The number of types with spin.
+  **/
+  int numb_types_spin () const {assert(inited); return ntypes_spin;};
+  /**
   * @brief Get the dimension of the frame parameter.
   * @return The dimension of the frame parameter.
   **/
@@ -411,6 +422,7 @@ private:
   std::string model_type;
   std::string model_version;
   int ntypes;
+  int ntypes_spin;
   int dfparam;
   int daparam;
   void validate_fparam_aparam(const int & nloc,

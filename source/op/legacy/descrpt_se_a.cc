@@ -4,7 +4,7 @@
 #include "fmt_nlist.h"
 #include "env_mat.h"
 #include "errors.h"
-
+#include <iostream>
 typedef double boxtensor_t ;
 typedef double compute_t;
 
@@ -256,7 +256,6 @@ public:
       else {
 	throw deepmd::deepmd_exception("unknow neighbor mode");
       }
-
       // loop over atoms, compute descriptors for each atom
 #pragma omp parallel for 
       for (int ii = 0; ii < nloc; ++ii){
@@ -310,12 +309,13 @@ public:
 	}
 	for (int jj = 0; jj < nnei_a; ++jj){
 	  int record = fmt_nlist_a[jj];
-	  if (b_nlist_map && record >= 0) {
+      if (b_nlist_map && record >= 0) {
 	    record = nlist_map[record];
 	  }
 	  nlist (kk, ii * nnei + jj) = record;
 	}
       }
+
     }
   }
 private:

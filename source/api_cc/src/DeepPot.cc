@@ -40,13 +40,12 @@ run_model (ENERGYTYPE &			dener,
     fill(dvirial.begin(), dvirial.end(), (VALUETYPE)0.0);
     return;
   }
-
+  
   std::vector<Tensor> output_tensors;
   check_status (session->Run(input_tensors, 
 			    {"o_energy", "o_force", "o_atom_energy", "o_atom_virial"}, 
 			    {}, 
 			    &output_tensors));
-  
   Tensor output_e = output_tensors[0];
   Tensor output_f = output_tensors[1];
   Tensor output_av = output_tensors[3];
@@ -57,6 +56,7 @@ run_model (ENERGYTYPE &			dener,
 
   dener = oe(0);
   std::vector<VALUETYPE> dforce (3 * nall);
+  dforce_.resize(nall * 3);
   dvirial.resize (9);
   for (unsigned ii = 0; ii < nall * 3; ++ii){
     dforce[ii] = of(ii);
@@ -215,6 +215,7 @@ init (const std::string & model, const int & gpu_rank, const std::string & file_
   rcut = get_scalar<VALUETYPE>("descrpt_attr/rcut");
   cell_size = rcut;
   ntypes = get_scalar<int>("descrpt_attr/ntypes");
+  ntypes_spin = get_scalar<int>("descrpt_attr/ntypes_spin");
   dfparam = get_scalar<int>("fitting_attr/dfparam");
   daparam = get_scalar<int>("fitting_attr/daparam");
   if (dfparam < 0) dfparam = 0;
@@ -384,7 +385,7 @@ compute (ENERGYTYPE &			dener,
   // internal nlist
   if (ago == 0){
     nlist_data.copy_from_nlist(lmp_list);
-    nlist_data.shuffle_exclude_empty(fwd_map);  
+    // nlist_data.shuffle_exclude_empty(fwd_map);  
   }
   compute_inner(dener, dforce, dvirial, dcoord, datype, dbox, nghost_real, ago, fparam, aparam);
   // bkw map
@@ -408,19 +409,19 @@ compute_inner (ENERGYTYPE &			dener,
   int nall = dcoord_.size() / 3;
   int nloc = nall - nghost;
 
-    validate_fparam_aparam(nloc, fparam, aparam);
-    std::vector<std::pair<std::string, Tensor>> input_tensors;
+  validate_fparam_aparam(nloc, fparam, aparam);
+  std::vector<std::pair<std::string, Tensor>> input_tensors;
 
-    // agp == 0 means that the LAMMPS nbor list has been updated
-    if (ago == 0) {
-      atommap = deepmd::AtomMap<VALUETYPE> (datype_.begin(), datype_.begin() + nloc);
-      assert (nloc == atommap.get_type().size());
-      nlist_data.shuffle(atommap);
-      nlist_data.make_inlist(nlist);
-    }
-    int ret = session_input_tensors (input_tensors, dcoord_, ntypes, datype_, dbox, nlist, fparam, aparam, atommap, nghost, ago);
-    assert (nloc == ret);
-    run_model (dener, dforce_, dvirial, session, input_tensors, atommap, nghost);
+  // ago == 0 means that the LAMMPS nbor list has been updated
+  if (ago == 0) {
+    atommap = deepmd::AtomMap<VALUETYPE> (datype_.begin(), datype_.begin() + nloc);
+    assert (nloc == atommap.get_type().size());
+    // nlist_data.shuffle(atommap);
+    nlist_data.make_inlist(nlist);
+  }
+  int ret = session_input_tensors (input_tensors, dcoord_, ntypes, datype_, dbox, nlist, fparam, aparam, atommap, nghost, ago);
+  assert (nloc == ret);
+  run_model (dener, dforce_, dvirial, session, input_tensors, atommap, nghost);
 }
 
 
@@ -590,6 +591,7 @@ init (const std::vector<std::string> & models, const int & gpu_rank, const std::
   rcut = get_scalar<VALUETYPE>("descrpt_attr/rcut");
   cell_size = rcut;
   ntypes = get_scalar<int>("descrpt_attr/ntypes");
+  ntypes_spin = get_scalar<int>("descrpt_attr/ntypes_spin");
   dfparam = get_scalar<int>("fitting_attr/dfparam");
   daparam = get_scalar<int>("fitting_attr/daparam");
   if (dfparam < 0) dfparam = 0;

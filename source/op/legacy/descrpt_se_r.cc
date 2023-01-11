@@ -257,11 +257,6 @@ public:
 	    }
 	  }
 	}
-	// std::cout << ii << " " ;
-	// for (int jj = 0 ; jj < fmt_nlist.size(); ++jj){
-	//   std::cout << fmt_nlist[jj] << " " ;
-	// }
-	// std::cout << std::endl;
 
 	std::vector<compute_t > d_descrpt;
 	std::vector<compute_t > d_descrpt_deriv;

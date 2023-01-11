@@ -17,7 +17,7 @@ from deepmd.env import GLOBAL_ENER_FLOAT_PRECISION
 from deepmd.fit import EnerFitting, WFCFitting, PolarFittingLocFrame, PolarFittingSeA, GlobalPolarFittingSeA, DipoleFittingSeA
 from deepmd.descriptor import Descriptor
 from deepmd.model import EnerModel, WFCModel, DipoleModel, PolarModel, GlobalPolarModel
-from deepmd.loss import EnerStdLoss, EnerDipoleLoss, EnerSpinLoss, TensorLoss
+from deepmd.loss import EnerStdLoss, EnerDipoleLoss,EnerSpinLoss, TensorLoss
 from deepmd.utils.errors import GraphTooLargeError
 from deepmd.utils.learning_rate import LearningRateExp
 from deepmd.utils.neighbor_stat import NeighborStat
@@ -98,7 +98,10 @@ class DPTrainer (object):
         fitting_param.pop('type', None)
         fitting_param['descrpt'] = self.descrpt
         if fitting_type == 'ener':
-            self.fitting = EnerFitting(**fitting_param)
+            if self.spin is not None:
+                self.fitting = EnerFitting(**fitting_param, **self.spin)
+            else :
+                self.fitting = EnerFitting(**fitting_param)
         # elif fitting_type == 'wfc':            
         #     self.fitting = WFCFitting(fitting_param, self.descrpt)
         elif fitting_type == 'dipole':

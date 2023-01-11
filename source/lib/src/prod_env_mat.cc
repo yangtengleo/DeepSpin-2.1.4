@@ -121,7 +121,6 @@ prod_env_mat_r_cpu(
       d_coord3[ii * 3 + dd] = coord[ii * 3 + dd];
     }
   }
-
   // set type
   std::vector<int> d_type (nall);
   for (int ii = 0; ii < nall; ++ii) {
